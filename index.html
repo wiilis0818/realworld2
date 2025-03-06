@@ -1,0 +1,138 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <link rel="stylesheet" href="css/style.css">
+  <meta name="description" content="">
+
+  <script type="module">
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    // Firebase 配置
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjKBRRKgOmn1riONPsYEC0G9h-47EL9ug",
+      authDomain: "willistest-40dff.firebaseapp.com",
+      projectId: "willistest-40dff",
+      storageBucket: "willistest-40dff.firebasestorage.app",
+      messagingSenderId: "524383134160",
+      appId: "1:524383134160:web:2fe912a3d5d2ad268c19d5",
+      measurementId: "G-27HNC6CGVW"
+    };
+
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    console.log("🔥 Firebase 初始化成功！", app);
+
+    // 登录函数
+    function loginUser() {
+      let email = document.getElementById("email").value;
+      let password = document.getElementById("password").value;
+      let errorMessage = document.getElementById("errorMessage");
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log("✅ 登录成功", user);
+          errorMessage.style.color = "green";
+          errorMessage.textContent = "✅ 登录成功！";
+        })
+        .catch((error) => {
+          console.error("❌ 登录失败", error.code, error.message);
+          errorMessage.style.color = "red";
+          errorMessage.textContent = "❌ 登录失败：" + error.message;
+        });
+    }
+
+    // 绑定函数到全局作用域
+    window.loginUser = loginUser;
+  </script>
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+  <meta property="og:image:alt" content="">
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.png">
+
+  <link rel="manifest" href="site.webmanifest">
+  <meta name="theme-color" content="#fafafa">
+</head>
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户登录</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 300px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      border: none;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .error {
+      color: red;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>用户登录</h2>
+  <input type="email" id="email" placeholder="输入邮箱" required>
+  <input type="password" id="password" placeholder="输入密码" required>
+  <p class="error" id="errorMessage"></p>
+  <button onclick="loginUser()">登录</button>
+</div>
+
+</body>
+</html>
+
+
+</html>
