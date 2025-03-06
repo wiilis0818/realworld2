@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户登录</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <script type="module">
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    // Firebase 配置
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjKBRRKgOmn1riONPsYEC0G9h-47EL9ug",
+      authDomain: "willistest-40dff.firebaseapp.com",
+      projectId: "willistest-40dff",
+      storageBucket: "willistest-40dff.firebasestorage.app",
+      messagingSenderId: "524383134160",
+      appId: "1:524383134160:web:2fe912a3d5d2ad268c19d5",
+      measurementId: "G-27HNC6CGVW"
+    };
+
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    console.log("🔥 Firebase 初始化成功！", app);
+
+    // 创建 Google 登录提供者
+    const provider = new GoogleAuthProvider();
+
+    // Google 登录函数
+    function loginWithGoogle() {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          const user = result.user;
+          console.log("✅ Google 登录成功", user);
+          alert("✅ Google 登录成功：" + user.displayName);
+          window.location.href = "mappage.html"; // 登录成功后跳转
+        })
+        .catch((error) => {
+          console.error("❌ Google 登录失败", error);
+          alert("❌ Google 登录失败：" + error.message);
+        });
+    }
+
+    // 绑定 Google 登录函数到全局作用域
+    window.loginWithGoogle = loginWithGoogle;
+
+    // 邮箱登录函数
+    function loginUser() {
+      let email = document.getElementById("email").value;
+      let password = document.getElementById("password").value;
+      let errorMessage = document.getElementById("errorMessage");
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log("✅ 登录成功", user);
+          errorMessage.style.color = "green";
+          errorMessage.textContent = "✅ 登录成功！";
+          window.location.href = "mappage.html"; // 邮箱登录成功后跳转
+        })
+        .catch((error) => {
+          console.error("❌ 登录失败", error.code, error.message);
+          errorMessage.style.color = "red";
+          errorMessage.textContent = "❌ 登录失败：" + error.message;
+        });
+    }
+
+    // 绑定邮箱登录函数到全局作用域
+    window.loginUser = loginUser;
+  </script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 350px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .btn-google {
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-google img {
+      width: 20px;
+      margin-right: 8px;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 20px 0;
+      font-size: 14px;
+      color: #999;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background-color: #ccc;
+      margin: 0 10px;
+    }
+
+    .input-box {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .btn-submit {
+      background-color: black;
+      color: white;
+    }
+
+    .login-link {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .login-link a {
+      color: black;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>用户登录</h2>
+
+  <button class="btn btn-google" onclick="loginWithGoogle()">
+    <img src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google Logo"> 使用 Google 登录
+  </button>
+
+  <div class="divider">或</div>
+
+  <input type="email" class="input-box" id="email" placeholder="输入邮箱">
+  <input type="password" class="input-box" id="password" placeholder="创建密码">
+
+  <button class="btn btn-submit" onclick="loginUser()">邮箱登录</button>
+
+  <p class="login-link">已有账户？ <a href="#">登录</a></p>
+</div>
+
+</body>
+</html>
