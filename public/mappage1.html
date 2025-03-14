@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>全球新闻聚合</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Apple MapKit -->
+  <script src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js"></script>
+
+  <style>
+    /* 地图主容器 */
+    #mapContainer {
+      position: relative;
+      margin-left: 12rem; /* 留出侧边栏宽度 */
+      margin-top: 4rem;   /* 留出顶部导航栏高度 */
+      width: calc(100vw - 12rem);
+      height: calc(100vh - 4rem);
+      background-color: #000;
+    }
+
+    /* 右侧抽屉面板 */
+    .sheet {
+      position: fixed;
+      right: -400px;
+      top: 4rem;
+      width: 400px;
+      height: calc(100vh - 4rem);
+      background-color: #fff;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+      transition: right 0.3s ease-in-out;
+      border-radius: 10px 0 0 10px;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    .sheet.show {
+      right: 0;
+    }
+
+    /* 右上角透明长方形 */
+    #transparentBox {
+      position: fixed;
+      top: 5rem; /* 调整位置稍微往下 */
+      right: 1rem;
+      width: 300px;
+      height: 110px;
+      background: rgba(255, 255, 255, 0.5); /* 20% 透明度 */
+      border-radius: 10px; /* 圆角 */
+      padding: 1rem;
+    }
+
+    /* 头像占位符 */
+    .avatar-placeholder {
+      width: 72px;
+      height: 72px;
+      background: #6b7280;
+      border-radius: 100%;
+      display: flex; /* 让内部元素居中 */
+      align-items: center; /* 垂直居中 */
+      justify-content: center; /* 水平居中 */
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+
+<!-- 顶部导航栏 -->
+<header class="fixed top-0 left-0 w-full h-16 bg-gray-800 flex items-center px-4 shadow-md z-10">
+  <div class="text-xl font-bold">全球新闻聚合</div>
+  <div class="ml-auto flex items-center">
+    <input type="text" placeholder="搜索国家或关键词..." class="bg-gray-700 text-white px-3 py-1 rounded-l outline-none" id="globalSearchInput"/>
+    <button class="bg-blue-600 px-4 py-1 rounded-r hover:bg-blue-500" onclick="globalSearch()">搜索</button>
+  </div>
+</header>
+
+<!-- 左侧侧边栏（分类） -->
+<aside class="fixed left-0 top-16 h-screen w-48 bg-gray-800 flex flex-col py-4 shadow-lg z-10">
+  <nav class="flex flex-col space-y-2 px-3">
+    <button class="w-full bg-gray-700 hover:bg-gray-600 rounded p-2 text-left" onclick="setCategory('all')">全部新闻</button>
+    <button class="w-full bg-gray-700 hover:bg-gray-600 rounded p-2 text-left" onclick="setCategory('economy')">经济</button>
+    <button class="w-full bg-gray-700 hover:bg-gray-600 rounded p-2 text-left" onclick="setCategory('technology')">科技</button>
+    <button class="w-full bg-gray-700 hover:bg-gray-600 rounded p-2 text-left" onclick="setCategory('finance')">金融</button>
+    <button class="w-full bg-gray-700 hover:bg-gray-600 rounded p-2 text-left" onclick="setCategory('politics')">政治/政策</button>
+    <button class="w-full bg-gray-700 hover:bg-gray-600 rounded p-2 text-left" onclick="setCategory('emergency')">紧急消息</button>
+  </nav>
+</aside>
+
+<!-- 地图容器 -->
+<div id="mapContainer">
+  <div id="map" style="width: 100%; height: 100%;"></div>
+</div>
+
+<!-- 右上角透明长方形 -->
+<div id="transparentBox">
+  <div class="user-avatar">
+    <div class="avatar-placeholder"></div>
+    <span class="status-indicator"></span>
+  </div>
+</div>
+
+<!-- 右侧抽屉面板：新闻列表 & AI 分析 -->
+<div class="sheet" id="newsSheet">
+  <h2 class="text-xl font-semibold mb-4" id="countryTitle">国家新闻</h2>
+  <div id="newsList" class="space-y-2 text-black"></div>
+  <button class="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-500" onclick="showAIAnalysis()">AI 分析</button>
+  <div id="aiAnalysisResult" class="mt-2 text-sm text-black bg-gray-200 p-2 rounded hidden"></div>
+  <button class="mt-4 w-full bg-gray-500 text-white py-2 rounded hover:bg-gray-400" onclick="hideSheet()">关闭</button>
+</div>
+
+<script>
+  const token = "eyJraWQiOiI2NDlZUVZaTjJCIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJNTEg1V0gyUjhLIiwiaWF0IjoxNzQxMzA4MjYwLCJleHAiOjE3NDE5MzU1OTl9.ns6WaU0boac1xN_AsXxuBj806mAoBmDFxUh7JiVdWtuEP8CULfnDZ_3x6xNSu3dpcOLFe1nNfr5sEUN_zmosbw"; // 替换为你的 Apple MapKit Token
+
+  // 初始化 Apple Maps
+  mapkit.init({
+    authorizationCallback: function(done) {
+      console.log("MapKit 正在初始化...");
+      done(token);
+    }
+  });
+
+var map = new mapkit.Map("map", {
+  showsPointsOfInterest: false,
+  showsTraffic: false,
+  showsMapTypeControl: false, // 使用 mutedStandard 模式减少道路细节
+});
+// 创建美国州份Marker（初始隐藏）
+const usaStates = [
+  { title: "加利福尼亚州", coords: [36.7783, -119.4179] },
+  { title: "纽约州", coords: [43.2994, -74.2179] },
+  { title: "德克萨斯州", coords: [31.9686, -99.9018] },
+  { title: "佛罗里达州", coords: [27.9944, -81.7603] },
+  { title: "伊利诺伊州", coords: [40.6331, -89.3985] },
+  { title: "宾夕法尼亚州", coords: [41.2033, -77.1945] },
+  { title: "华盛顿州", coords: [47.7511, -120.7401] },
+  { title: "佐治亚州", coords: [32.1656, -82.9001] },
+  { title: "新泽西州", coords: [40.0583, -74.4057] },
+  { title: "俄亥俄州", coords: [40.4173, -82.9071] },
+  { title: "俄勒冈州", coords: [43.8041, -120.5542] },
+  { title: "内华达州", coords: [38.8026, -116.4194] },
+  { title: "亚利桑那州", coords: [34.0489, -111.0937] },
+  { title: "阿拉斯加州", coords: [64.2008, -149.4937] },
+  { title: "爱达荷州", coords: [44.0682, -114.7420] },
+  { title: "蒙大拿州", coords: [46.8797, -110.3626] },
+  { title: "怀俄明州", coords: [43.0760, -107.2903] },
+  { title: "科罗拉多州", coords: [39.5501, -105.7821] },
+  { title: "新墨西哥州", coords: [34.5199, -105.8701] },
+  { title: "夏威夷州", coords: [19.8968, -155.5828] },
+  { title: "犹他州", coords: [39.3200, -111.0937] },
+  { title: "北达科他州", coords: [47.5515, -101.0020] },
+  { title: "南达科他州", coords: [43.9695, -99.9018] },
+  { title: "内布拉斯加州", coords: [41.4925, -99.9018] },
+  { title: "堪萨斯州", coords: [39.0119, -98.4842] },
+  { title: "俄克拉荷马州", coords: [35.0078, -97.0929] },
+  { title: "明尼苏达州", coords: [46.7296, -94.6859] },
+  { title: "艾奥瓦州", coords: [41.8780, -93.0977] },
+  { title: "密苏里州", coords: [38.5739, -92.6038] },
+  { title: "阿肯色州", coords: [34.7465, -92.2896] },
+  { title: "路易斯安那州", coords: [30.9843, -91.9623] },
+  { title: "密西西比州", coords: [32.3547, -89.3985] },
+  { title: "密歇根州", coords: [44.3148, -85.6024] },
+  { title: "印第安纳州", coords: [39.7684, -86.1581] },
+  { title: "肯塔基州", coords: [37.8393, -84.2700] },
+  { title: "缅因州", coords: [45.2538, -69.4455] },
+  { title: "西弗吉尼亚州", coords: [38.5976, -80.4549] },
+  { title: "田纳西州", coords: [35.5175, -86.5804] },
+  { title: "阿拉巴马州", coords: [32.8067, -86.7911] },
+  { title: "特拉华州", coords: [38.9108, -75.5277] },
+  { title: "新罕布什尔州", coords: [43.1939, -71.5724] },
+  { title: "佛蒙特州", coords: [44.5588, -72.5778] },
+  { title: "马萨诸塞州", coords: [42.4072, -71.3824] },
+  { title: "威斯康星州", coords: [43.7844, -88.7879] },
+  { title: "南卡罗来纳州", coords: [33.8361, -81.1637] },
+  { title: "北卡罗来纳州", coords: [35.7596, -79.0193] },
+  { title: "弗吉尼亚州", coords: [37.4316, -78.6569] },
+  { title: "康涅狄格州", coords: [41.6032, -73.0877] },
+  { title: "马里兰州", coords: [39.0458, -76.6413] }
+].map(state => {
+  let marker = new mapkit.MarkerAnnotation(new mapkit.Coordinate(...state.coords), {
+    title: state.title,
+    visible: false,
+    color: "#e74c3c"
+  });
+  map.addAnnotation(marker);
+  return marker;
+});
+
+// 让用户点击一个州后，隐藏其他州 Marker，仅显示被选中的 Marker
+usaStates.forEach(marker => {
+  marker.addEventListener("select", () => {
+    usaStates.forEach(m => {
+      if (m === marker) {
+        m.visible = true; // 选中的 Marker 仍然可见
+      } else {
+        m.visible = false; // 其他 Marker 被隐藏
+      }
+    });
+  });
+});
+
+// 创建英国的城市 Marker（初始隐藏，红色）
+const ukRegions = [
+  { title: "伦敦", coords: [51.5074, -0.1278] },
+  { title: "伯明翰", coords: [52.4862, -1.8904] },
+  { title: "格拉斯哥", coords: [55.8642, -4.2518] },
+  { title: "利物浦", coords: [53.4084, -2.9916] },
+  { title: "布里斯托尔", coords: [51.4545, -2.5879] }
+].map(city => {
+  let marker = new mapkit.MarkerAnnotation(new mapkit.Coordinate(...city.coords), {
+    title: city.title,
+    visible: false,
+    color: "#e74c3c"
+  });
+  map.addAnnotation(marker);
+  return marker;
+});
+
+// 修改 showSheet() 函数，控制英国省份 Marker 显示/隐藏
+const originalShowSheet = showSheet;
+showSheet = function(countryName) {
+  originalShowSheet(countryName);
+
+  if (countryName === "United Kingdom" || countryName === "英国") {
+    ukRegions.forEach(marker => marker.visible = true);
+  } else {
+    ukRegions.forEach(marker => marker.visible = false);
+  }
+};
+
+// 修改 showSheet()函数以处理美国Marker的显示和隐藏
+const originalShowSheetUSA = showSheet;
+showSheet = function(countryName) {
+  originalShowSheetUSA(countryName);
+
+  if (countryName === "United States" || countryName === "美国") {
+    usaStates.forEach(marker => marker.visible = true);
+  } else {
+    usaStates.forEach(marker => marker.visible = false);
+  }
+};
+
+// 创建加拿大所有省份和地区的 Marker（初始状态隐藏，点击加拿大时显示）
+const canadaMarkers = [
+  { title: "阿尔伯塔省", coords: [53.9333, -116.5765] },
+  { title: "不列颠哥伦比亚省", coords: [53.7267, -127.6476] },
+  { title: "曼尼托巴省", coords: [53.7609, -98.8139] },
+  { title: "新不伦瑞克省", coords: [46.5653, -66.4619] },
+  { title: "纽芬兰与拉布拉多省", coords: [53.1355, -57.6604] },
+  { title: "新斯科舍省", coords: [44.6820, -63.7443] },
+  { title: "安大略省", coords: [51.2538, -85.3232] },
+  { title: "爱德华王子岛省", coords: [46.5107, -63.4168] },
+  { title: "魁北克省", coords: [52.9399, -73.5491] },
+  { title: "萨斯喀彻温省", coords: [52.9399, -106.4509] }
+].map(region => {
+  let marker = new mapkit.MarkerAnnotation(new mapkit.Coordinate(...region.coords), {
+    title: region.title,
+    visible: false,
+    color: "#e74c3c"
+  });
+  map.addAnnotation(marker);
+  return marker;
+});
+
+// 当用户点击一个加拿大省的 Marker 时，隐藏其他省 Marker，仅显示被选中的 Marker
+canadaMarkers.forEach(marker => {
+  marker.addEventListener("select", () => {
+    canadaMarkers.forEach(m => {
+      m.visible = (m === marker); // 只有被选中的 Marker 可见，其他 Marker 隐藏
+    });
+  });
+});
+
+// 加拿大各省的城市数据（已写死）
+const provinceCities = {
+  "安大略省": [
+    { title: "多伦多", coords: [43.6532, -79.3832] },
+    { title: "渥太华", coords: [45.4215, -75.6994] }
+  ],
+  "魁北克省": [
+    { title: "蒙特利尔", coords: [45.5017, -73.5673] },
+    { title: "魁北克市", coords: [46.8139, -71.2080] }
+  ],
+  "不列颠哥伦比亚省": [
+    { title: "Vancouver", coords: [49.2827, -123.1207] },
+    { title: "Victoria", coords: [48.4284, -123.3656] },
+    { title: "Whistler", coords: [50.1163, -122.9574] }
+  ],
+  "阿尔伯塔省": [
+    { title: "卡尔加里", coords: [51.0447, -114.0719] },
+    { title: "埃德蒙顿", coords: [53.5461, -113.4938] }
+  ],
+  "曼尼托巴省": [
+    { title: "温尼伯", coords: [49.8951, -97.1384] }
+  ],
+  "萨斯喀彻温省": [
+    { title: "萨斯卡通", coords: [52.1579, -106.6702] },
+    { title: "里贾纳", coords: [50.4452, -104.6189] }
+  ],
+  "新斯科舍省": [
+    { title: "哈利法克斯", coords: [44.6488, -63.5752] }
+  ],
+  "新不伦瑞克省": [
+    { title: "弗雷德里克顿", coords: [45.9636, -66.6431] }
+  ],
+  "纽芬兰与拉布拉多省": [
+    { title: "圣约翰斯", coords: [47.5615, -52.7126] }
+  ],
+  "爱德华王子岛省": [
+    { title: "夏洛特敦", coords: [46.2382, -63.1311] }
+  ],
+  "育空地区": [
+    { title: "怀特霍斯", coords: [60.7212, -135.0568] }
+  ],
+  "西北地区": [
+    { title: "耶洛奈夫", coords: [62.4540, -114.3718] }
+  ],
+  "努纳武特地区": [
+    { title: "伊魁特", coords: [63.7467, -68.5169] }
+  ]
+};
+
+// 用于存储城市 Marker
+let cityMarkers = [];
+
+// 给所有省 Marker 添加点击事件，显示对应城市 Marker
+canadaMarkers.forEach(marker => {
+  marker.addEventListener("select", () => {
+    // 清空并隐藏已有城市 Marker
+    cityMarkers.forEach(m => map.removeAnnotation(m));
+    cityMarkers = [];
+
+    const cities = provinceCities[marker.title];
+    if (cities) {
+      cities.forEach(city => {
+        let cityMarker = new mapkit.MarkerAnnotation(new mapkit.Coordinate(...city.coords), {
+          title: city.title,
+          color: "#3498db",
+          visible: true
+        });
+        map.addAnnotation(cityMarker);
+        cityMarkers.push(cityMarker);
+      });
+    }
+  });
+});
+
+  // 创建标记但默认隐藏
+  const torontoCoordinate = new mapkit.Coordinate(43.6532, -79.3832);
+  const torontoMarker = new mapkit.MarkerAnnotation(torontoCoordinate, {
+    title: "Toronto",
+    subtitle: "加拿大多伦多",
+    color: "#e74c3c",
+    visible: false // 初始状态为隐藏
+  });
+  map.addAnnotation(torontoMarker);
+
+  setTimeout(() => {
+    console.log("地图初始化完成，监听点击事件...");
+    map.addEventListener("single-tap", handleMapClick);
+  }, 1000);
+
+  function handleMapClick(event) {
+    var coordinate = event.coordinate || map.convertPointOnPageToCoordinate(event.pointOnPage);
+    if (!coordinate) return;
+
+    var mapkitCoordinate = new mapkit.Coordinate(coordinate.latitude, coordinate.longitude);
+    var geocoder = new mapkit.Geocoder();
+
+    geocoder.reverseLookup(mapkitCoordinate, function(error, data) {
+      if (error || data.results.length === 0) {
+        document.getElementById("countryTitle").textContent = "未知国家";
+        return;
+      }
+
+      let country = data.results[0].country || "未知国家";
+      console.log("用户点击的国家:", country);
+      showSheet(country);
+    });
+  }
+
+  function showSheet(countryName) {
+    document.getElementById("countryTitle").innerText = countryName;
+    updateNewsList(countryName);
+
+    if (countryName === "Canada" || countryName === "加拿大") {
+      canadaMarkers.forEach(marker => marker.visible = true);
+    } else {
+      canadaMarkers.forEach(marker => marker.visible = false);
+      cityMarkers.forEach(marker => marker.visible = false); // 添加这一行以隐藏城市 Marker
+    }
+
+    document.getElementById("newsList").innerHTML = "<div>加载新闻中...</div>";
+  }
+
+  function hideSheet() {
+    document.getElementById("newsSheet").classList.remove("show");
+  }
+  // ========== 使用 Mediastack 获取新闻数据 ==========
+  const API_KEY = "5cd56f3543ac8e93d3313f7af75daba7"; // 请替换为你的 API Key
+
+  async function fetchNewsData(countryName) {
+    const countryCodeMapping = {
+      "China": "cn",
+      "United States": "us",
+      "United Kingdom": "gb",
+      "France": "fr",
+      "Germany": "de"
+    };
+
+    const countryCode = countryCodeMapping[countryName] || "";
+    let url = `https://api.mediastack.com/v1/news?access_key=${API_KEY}&countries=${countryCode}&limit=10`;
+
+    console.log("Fetching news from URL:", url);
+
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      console.log("Mediastack response:", data);
+      return data.data || [];
+    } catch (error) {
+      console.error("Fetch error:", error);
+      return [];
+    }
+  }
+
+  async function updateNewsList(countryName) {
+    console.log("Updating news list for:", countryName);
+    document.getElementById("newsList").innerHTML = "<div>正在加载新闻...</div>";
+
+    let articles = await fetchNewsData(countryName); // 🔥 确保 fetchNewsData 存在
+
+    if (articles.length === 0) {
+      document.getElementById("newsList").innerHTML = "<div>暂无相关新闻</div>";
+      return;
+    }
+
+    document.getElementById("newsList").innerHTML = "";
+    articles.forEach(article => {
+      let item = document.createElement("div");
+      item.className = "bg-gray-100 p-3 rounded";
+      item.innerHTML = `<div class="font-semibold">${article.title}</div>
+                          <div class="text-gray-700 text-sm">${article.description || ""}</div>
+                          <a href="${article.url}" target="_blank" class="text-blue-600 text-xs">阅读全文</a>`;
+      document.getElementById("newsList").appendChild(item);
+    });
+  }
+</script>
+
+</body>
+</html>

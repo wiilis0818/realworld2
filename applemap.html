@@ -1,10 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apple Map 点击获取国家示例</title>
+  <script src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js"></script>
 </head>
 <body>
-$END$
+<h1>点击地图获取国家信息</h1>
+<p id="info">点击地图以获取国家信息...</p>
+<div id="map" style="width: 100%; height: 500px;"></div>
+
+<script>
+  const token = "eyJraWQiOiI2NDlZUVZaTjJCIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJNTEg1V0gyUjhLIiwiaWF0IjoxNzQxMzA4MjYwLCJleHAiOjE3NDE5MzU1OTl9.ns6WaU0boac1xN_AsXxuBj806mAoBmDFxUh7JiVdWtuEP8CULfnDZ_3x6xNSu3dpcOLFe1nNfr5sEUN_zmosbw"; // 替换为你的真实 Token
+
+  // 初始化 Apple Maps
+  mapkit.init({
+    authorizationCallback: function(done) {
+      console.log("MapKit 正在初始化...");
+      done(token);
+    }
+  });
+
+  var map = new mapkit.Map("map");
+
+  // 确保地图加载完成后再监听点击事件
+  setTimeout(() => {
+    console.log("地图初始化完成，开始监听点击事件...");
+    map.addEventListener("single-tap", handleMapClick);
+  }, 1000);
+
+  function handleMapClick(event) {
+    console.log("点击事件触发:", event);
+
+    // 获取点击的坐标
+    var coordinate = event.coordinate || map.convertPointOnPageToCoordinate(event.pointOnPage);
+
+    if (!coordinate) {
+      console.error("点击事件没有坐标信息:", event);
+      return;
+    }
+
+    console.log("点击的坐标:", coordinate.latitude, coordinate.longitude);
+
+    // **创建 MapKit 坐标对象**
+    var mapkitCoordinate = new mapkit.Coordinate(coordinate.latitude, coordinate.longitude);
+
+    // **进行反向地理编码**
+    var geocoder = new mapkit.Geocoder();
+
+    geocoder.reverseLookup(mapkitCoordinate, function(error, data) {
+      if (error) {
+        console.error("地理编码错误:", error);
+        document.getElementById("info").textContent = "无法获取国家信息";
+        return;
+      }
+
+      // **确保有返回数据**
+      if (data.results.length > 0) {
+        let country = data.results[0].country || "未知国家";
+        console.log("用户点击的国家:", country);
+        document.getElementById("info").textContent = `点击的国家: ${country}`;
+      } else {
+        console.warn("未找到国家信息");
+        document.getElementById("info").textContent = "未找到国家信息";
+      }
+    });
+  }
+</script>
 </body>
 </html>

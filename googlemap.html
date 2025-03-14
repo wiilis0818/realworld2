@@ -1,10 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>$Title$</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Google 地图</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    #map {
+      width: 80%;
+      height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+  </style>
 </head>
 <body>
-$END$
+
+<h2>Google 地图示例</h2>
+<div id="map"></div>
+
+<script>
+  function initMap() {
+    const map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: 20.0, lng: 0.0 }, // 设置全球中心
+      zoom: 2, // 显示整个世界
+      styles: [
+        {
+          featureType: "poi",
+          elementType: "labels",
+          stylers: [{ visibility: "off" }]
+        }
+      ]
+    });
+
+    // 定义国家的标记坐标
+    const countries = [
+      { name: "美国", position: { lat: 37.0902, lng: -95.7129 }, url: "usa.html" },
+      { name: "中国", position: { lat: 35.8617, lng: 104.1954 }, url: "china.html" },
+      { name: "法国", position: { lat: 46.6034, lng: 1.8883 }, url: "france.html" },
+      { name: "日本", position: { lat: 36.2048, lng: 138.2529 }, url: "japan.html" }
+    ];
+
+    // 遍历国家数组，创建可点击的标记
+    countries.forEach(country => {
+      const marker = new google.maps.Marker({
+        position: country.position,
+        map: map,
+        title: country.name
+      });
+
+      // 监听点击事件，打开新页面
+      marker.addListener("click", () => {
+        window.open(country.url, "_blank"); // 在新窗口打开对应的页面
+      });
+    });
+  }
+</script>
+
+<!-- 引入 Google Maps API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCN_a7RnbiHSoW2FZlcSacCjK3WFBsl1x8&callback=initMap"></script>
+
 </body>
 </html>

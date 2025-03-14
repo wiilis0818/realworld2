@@ -10,11 +10,10 @@
     // Import Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
     // Firebase 配置
     const firebaseConfig = {
       apiKey: "AIzaSyAjKBRRKgOmn1riONPsYEC0G9h-47EL9ug",
-      authDomain: "willistest-40dff.firebaseapp.com",
+      authDomain: "realworld.today",
       projectId: "willistest-40dff",
       storageBucket: "willistest-40dff.firebasestorage.app",
       messagingSenderId: "524383134160",
@@ -26,27 +25,6 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     console.log("🔥 Firebase 初始化成功！", app);
-
-    // 创建 Google 登录提供者
-    const provider = new GoogleAuthProvider();
-
-    // Google 登录函数
-    function loginWithGoogle() {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          const user = result.user;
-          console.log("✅ Google 登录成功", user);
-          alert("✅ Google 登录成功：" + user.displayName);
-          window.location.href = "mappage.html"; // 登录成功后跳转
-        })
-        .catch((error) => {
-          console.error("❌ Google 登录失败", error);
-          alert("❌ Google 登录失败：" + error.message);
-        });
-    }
-
-    // 绑定 Google 登录函数到全局作用域
-    window.loginWithGoogle = loginWithGoogle;
 
     // 邮箱登录函数
     function loginUser() {
@@ -60,7 +38,7 @@
           console.log("✅ 登录成功", user);
           errorMessage.style.color = "green";
           errorMessage.textContent = "✅ 登录成功！";
-          window.location.href = "mappage.html"; // 邮箱登录成功后跳转
+          window.location.href = "mappage1.html"; // 邮箱登录成功后跳转
         })
         .catch((error) => {
           console.error("❌ 登录失败", error.code, error.message);
@@ -71,6 +49,37 @@
 
     // 绑定邮箱登录函数到全局作用域
     window.loginUser = loginUser;
+
+    // 创建 Google 登录提供者
+    const provider = new GoogleAuthProvider();
+
+    // Google 登录函数
+    function loginWithGoogle() {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          const user = result.user;
+          console.log("✅ Google 登录成功", user);
+
+          let errorMessage = document.getElementById("errorMessage");
+          if (errorMessage) {
+            errorMessage.style.color = "green";
+            errorMessage.textContent = "✅ Google 登录成功！";
+          }
+
+          window.location.href = "mappage1.html"; // Google 登录成功后跳转
+        })
+        .catch((error) => {
+          console.error("❌ Google 登录失败", error);
+          let errorMessage = document.getElementById("errorMessage");
+          if (errorMessage) {
+            errorMessage.style.color = "red";
+            errorMessage.textContent = "❌ Google 登录失败：" + error.message;
+          }
+        });
+    }
+
+    // 绑定 Google 登录函数到全局作用域
+    window.loginWithGoogle = loginWithGoogle;
   </script>
 
   <style>
@@ -190,8 +199,10 @@
 
   <button class="btn btn-submit" onclick="loginUser()">邮箱登录</button>
 
+  <!-- 错误消息显示区域 -->
+  <p id="errorMessage" style="color: red; margin-top: 10px;"></p>
+
   <p class="login-link">已有账户？ <a href="#">登录</a></p>
 </div>
-
 </body>
 </html>
