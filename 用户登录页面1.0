@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 我的网站</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @font-face {
+      font-family: 'RealWorld';
+      src: url('RealWorld.woff2') format('woff2'); /* 你需要提供这个字体 */
+    }
+    body {
+      font-family: 'RealWorld', sans-serif;
+      background-color: #1E1E1E; /* 深空灰 */
+    }
+    /* 左侧地球区域 */
+    #globe-container {
+      width: 40%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    /* 让视频适配整个容器 */
+    #globe-video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 让视频填充整个区域 */
+    }
+    /* 右侧登录 */
+    #login-container {
+      width: 60%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class="flex h-screen">
+
+<!-- 左侧科技地球（使用 Firebase 视频） -->
+<div id="globe-container">
+  <video id="globe-video" autoplay loop muted playsinline>
+    <source src="https://firebasestorage.googleapis.com/v0/b/willistest-40dff.firebasestorage.app/o/1992-153555258.mp4?alt=media&token=466bde93-8ab3-4afa-9a77-9b47fa180a50" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<!-- 右侧登录表单 -->
+<div id="login-container">
+  <div class="max-w-md w-full px-6">
+    <h1 class="text-3xl font-bold text-white text-center mb-6">Sign in or create an account</h1>
+    <p class="text-gray-400 text-sm text-center mb-6">
+      By continuing, including through our platform partners, you agree to our
+      <a href="#" class="underline">User Agreement</a> and acknowledge our
+      <a href="#" class="underline">Privacy Policy</a>.
+    </p>
+
+    <form>
+      <input type="email" placeholder="Email address"
+             class="w-full border border-gray-500 bg-gray-700 text-white px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-400">
+      <button class="w-full bg-gray-500 text-white py-3 font-medium hover:opacity-80">CONTINUE WITH EMAIL</button>
+    </form>
+
+    <div class="text-center my-4 text-gray-500">or</div>
+
+    <button class="w-full flex items-center justify-center border border-gray-500 py-3 mb-2 hover:bg-gray-700 text-white">
+      <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2"> CONTINUE WITH GOOGLE
+    </button>
+
+    <button class="w-full flex items-center justify-center border border-gray-500 py-3 mb-2 hover:bg-gray-700 text-white">
+      <img src="https://www.facebook.com/favicon.ico" class="w-5 h-5 mr-2"> CONTINUE WITH FACEBOOK
+    </button>
+
+    <button class="w-full flex items-center justify-center border border-gray-500 py-3 hover:bg-gray-700 text-white">
+      <img src="https://www.apple.com/favicon.ico" class="w-5 h-5 mr-2"> CONTINUE WITH APPLE
+    </button>
+  </div>
+</div>
+
+</body>
+</html>
