@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Real world today</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Apple MapKit -->
+  <script src="https://cdn.apple-mapkit.com/mk/5.x.x/mapkit.js"></script>
+
+  <style>
+    /* 地图主容器 */
+    #mapContainer {
+      position: relative;
+      margin-left: 4rem; /* 左侧栏调整为更细的宽度 */
+      margin-top: 4rem;
+      width: calc(100vw - 4rem);
+      height: calc(100vh - 4rem);
+      background-color: #000;
+    }
+
+    /* 右侧抽屉面板 */
+    .sheet {
+      position: fixed;
+      right: -400px;
+      top: 4rem;
+      width: 400px;
+      height: calc(100vh - 4rem);
+      background-color: #fff;
+      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
+      transition: right 0.3s ease-in-out;
+      border-radius: 10px 0 0 10px;
+      overflow-y: auto;
+      padding: 20px;
+      z-index: 50;
+    }
+    .sheet.show {
+      right: 0;
+    }
+    /* 左侧侧边栏 */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 4rem;
+      width: 4rem;
+      height: calc(100vh - 4rem);
+      background-color: #1f2937;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 1rem;
+    }
+    .sidebar button {
+      width: 3rem;
+      height: 3rem;
+      margin-bottom: 1rem;
+      background-color: #374151;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #fff;
+      cursor: pointer;
+    }
+    .sidebar button:hover {
+      background-color: #4b5563;
+    }
+    /* 顶部导航栏子菜单 */
+    .menu-group {
+      position: relative;
+    }
+    .subcategory {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: #4b5563;
+      min-width: 180px;
+      padding: 0.5rem 0;
+      border-radius: 0.25rem;
+      z-index: 100;
+    }
+    .subcategory button {
+      width: 100%;
+      text-align: left;
+      padding: 0.5rem 1rem;
+      color: #fff;
+    }
+    .subcategory button:hover {
+      background-color: #374151;
+    }
+    .subcategory.show {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+
+<!-- 顶部导航栏 -->
+<header class="fixed top-0 left-0 w-full h-16 bg-gray-800 flex items-center px-4 shadow-md z-10">
+  <div class="text-xl font-bold mr-6">Real world today</div>
+  <nav class="flex space-x-6">
+    <div class="menu-group">
+      <button class="hover:text-gray-300" onclick="toggleSubmenu('politics-menu')">politics</button>
+      <div id="politics-menu" class="subcategory">
+        <button>geopolitical</button>
+        <button>Law and governance</button>
+      </div>
+    </div>
+    <div class="menu-group">
+      <button class="hover:text-gray-300" onclick="toggleSubmenu('economic-menu')">economic</button>
+      <div id="economic-menu" class="subcategory">
+        <button>Global Economy</button>
+        <button>Corporate News</button>
+        <button>Financial Market</button>
+      </div>
+    </div>
+    <div class="menu-group">
+      <button class="hover:text-gray-300" onclick="toggleSubmenu('society-menu')">society</button>
+      <div id="society-menu" class="subcategory">
+        <button>Public Policy</button>
+        <button>Human rights Freedom</button>
+        <button>Criminal justice</button>
+      </div>
+    </div>
+    <div class="menu-group">
+      <button class="hover:text-gray-300" onclick="toggleSubmenu('technology-menu')">technology</button>
+      <div id="technology-menu" class="subcategory">
+        <button>Artificial Intelligence (AI)</button>
+        <button>Technology Industry</button>
+      </div>
+    </div>
+    <div class="menu-group">
+      <button class="hover:text-gray-300" onclick="toggleSubmenu('environment-menu')">environment</button>
+      <div id="environment-menu" class="subcategory">
+        <button>Natural Disasters</button>
+        <button>Climate Change</button>
+        <button>Ecological protection</button>
+      </div>
+    </div>
+  </nav>
+  <!-- 搜索框 -->
+  <div class="ml-auto">
+    <div class="relative">
+      <input type="text" placeholder="Search..." class="pl-8 pr-2 py-1 rounded bg-white text-gray-900" />
+      <svg class="w-4 h-4 text-gray-500 absolute left-2 top-1/2 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 103 10.5a7.5 7.5 0 0013.65 6.15z" />
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- 左侧功能栏 -->
+<aside class="sidebar">
+  <button title="Personalization">⚙️</button>
+  <button title="historical record">📜</button>
+  <button title="User Center">👤</button>
+</aside>
+
+<!-- 地图容器 -->
+<div id="mapContainer">
+  <div id="map" style="width: 100%; height: 100%;"></div>
+</div>
+
+<script>
+  const token = "YOUR_APPLE_MAPKIT_TOKEN";
+  mapkit.init({
+    authorizationCallback: function(done) {
+      done(token);
+    }
+  });
+  var map = new mapkit.Map("map");
+
+  function toggleSubmenu(menuId) {
+    document.querySelectorAll('.subcategory').forEach(menu => {
+      if (menu.id === menuId) {
+        menu.classList.toggle('show');
+      } else {
+        menu.classList.remove('show');
+      }
+    });
+  }
+</script>
+
+</body>
+</html>
