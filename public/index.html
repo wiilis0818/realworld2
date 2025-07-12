@@ -3,206 +3,215 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>用户登录</title>
-  <link rel="stylesheet" href="css/style.css">
-
-  <script type="module">
-    // Import Firebase SDKs
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    // Firebase 配置
-    const firebaseConfig = {
-      apiKey: "AIzaSyAjKBRRKgOmn1riONPsYEC0G9h-47EL9ug",
-      authDomain: "realworld.today",
-      projectId: "willistest-40dff",
-      storageBucket: "willistest-40dff.firebasestorage.app",
-      messagingSenderId: "524383134160",
-      appId: "1:524383134160:web:2fe912a3d5d2ad268c19d5",
-      measurementId: "G-27HNC6CGVW"
-    };
-
-    // 初始化 Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    console.log("🔥 Firebase 初始化成功！", app);
-
-    // 邮箱登录函数
-    function loginUser() {
-      let email = document.getElementById("email").value;
-      let password = document.getElementById("password").value;
-      let errorMessage = document.getElementById("errorMessage");
-
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
-          const user = userCredential.user;
-          console.log("✅ 登录成功", user);
-          errorMessage.style.color = "green";
-          errorMessage.textContent = "✅ 登录成功！";
-          window.location.href = "mappage1.html"; // 邮箱登录成功后跳转
-        })
-        .catch((error) => {
-          console.error("❌ 登录失败", error.code, error.message);
-          errorMessage.style.color = "red";
-          errorMessage.textContent = "❌ 登录失败：" + error.message;
-        });
-    }
-
-    // 绑定邮箱登录函数到全局作用域
-    window.loginUser = loginUser;
-
-    // 创建 Google 登录提供者
-    const provider = new GoogleAuthProvider();
-
-    // Google 登录函数
-    function loginWithGoogle() {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          const user = result.user;
-          console.log("✅ Google 登录成功", user);
-
-          let errorMessage = document.getElementById("errorMessage");
-          if (errorMessage) {
-            errorMessage.style.color = "green";
-            errorMessage.textContent = "✅ Google 登录成功！";
-          }
-
-          window.location.href = "mappage1.html"; // Google 登录成功后跳转
-        })
-        .catch((error) => {
-          console.error("❌ Google 登录失败", error);
-          let errorMessage = document.getElementById("errorMessage");
-          if (errorMessage) {
-            errorMessage.style.color = "red";
-            errorMessage.textContent = "❌ Google 登录失败：" + error.message;
-          }
-        });
-    }
-
-    // 绑定 Google 登录函数到全局作用域
-    window.loginWithGoogle = loginWithGoogle;
+  <title>登录 - 我的网站</title>
+  <script src="https://cdn.tailwindcss.com">
   </script>
-
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: Arial, sans-serif;
+    @font-face {
+      font-family: 'RealWorld';
+      src: url('RealWorld.woff2') format('woff2'); /* 你需要提供这个字体 */
     }
-
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      font-family: 'RealWorld', sans-serif;
+      background-color: #1E1E1E; /* 深空灰 */
+    }
+    /* 左侧地球区域 */
+    #globe-container {
+      width: 40%;
       height: 100vh;
-      background-color: #f4f4f4;
-    }
-
-    .container {
-      background-color: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 350px;
-      text-align: center;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      font-size: 22px;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .btn-google {
-      background-color: #ffffff;
-      border: 1px solid #ccc;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+      position: relative;
     }
-
-    .btn-google img {
-      width: 20px;
-      margin-right: 8px;
+    /* 让视频适配整个容器 */
+    #globe-video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 让视频填充整个区域 */
     }
-
-    .divider {
+    /* 右侧登录 */
+    #login-container {
+      width: 60%;
+      height: 100vh;
       display: flex;
       align-items: center;
-      margin: 20px 0;
-      font-size: 14px;
-      color: #999;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: "";
-      flex: 1;
-      height: 1px;
-      background-color: #ccc;
-      margin: 0 10px;
-    }
-
-    .input-box {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 14px;
-    }
-
-    .btn-submit {
-      background-color: black;
-      color: white;
-    }
-
-    .login-link {
-      font-size: 14px;
-      margin-top: 10px;
-    }
-
-    .login-link a {
-      color: black;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .login-link a:hover {
-      text-decoration: underline;
+      justify-content: center;
     }
   </style>
 </head>
+<body class="flex h-screen">
 
-<body>
-
-<div class="container">
-  <h2>用户登录</h2>
-
-  <button class="btn btn-google" onclick="loginWithGoogle()">
-    <img src="https://www.svgrepo.com/show/303108/google-icon-logo.svg" alt="Google Logo"> 使用 Google 登录
-  </button>
-
-  <div class="divider">或</div>
-
-  <input type="email" class="input-box" id="email" placeholder="输入邮箱">
-  <input type="password" class="input-box" id="password" placeholder="创建密码">
-
-  <button class="btn btn-submit" onclick="loginUser()">邮箱登录</button>
-
-  <!-- 错误消息显示区域 -->
-  <p id="errorMessage" style="color: red; margin-top: 10px;"></p>
-
-  <p class="login-link">已有账户？ <a href="#">登录</a></p>
+<!-- 左侧科技地球（使用 Firebase 视频） -->
+<div id="globe-container">
+  <video id="globe-video" autoplay loop muted playsinline>
+    <source src="https://firebasestorage.googleapis.com/v0/b/willistest-40dff.firebasestorage.app/o/1992-153555258.mp4?alt=media&token=466bde93-8ab3-4afa-9a77-9b47fa180a50" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
 </div>
+
+<!-- 右侧登录表单 -->
+<div id="login-container">
+  <div class="max-w-md w-full px-6">
+    <h1 class="text-3xl font-bold text-white text-center mb-6">Sign in or create an account</h1>
+    <p class="text-gray-400 text-sm text-center mb-6">
+      By continuing, including through our platform partners, you agree to our
+      <a href="#" class="underline">User Agreement</a> and acknowledge our
+      <a href="#" class="underline">Privacy Policy</a>.
+    </p>
+
+    <form onsubmit="event.preventDefault(); loginOrRegister();">
+      <input type="email" id="email" placeholder="Email address"
+             class="w-full border border-gray-500 bg-gray-700 text-white px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-400">
+      <input type="password" id="password" placeholder="Enter password"
+             class="w-full border border-gray-500 bg-gray-700 text-white px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-400">
+      <input type="password" id="confirmPassword" placeholder="Confirm password"
+             style="display: none;"
+             class="w-full border border-gray-500 bg-gray-700 text-white px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-400">
+      <button type="submit" id="submitButton" class="w-full bg-[#6A5ACD] text-white py-3 font-medium hover:opacity-80">LOGIN AND REGISTER WITH EMAIL</button>
+    </form>
+    <p id="errorMessage" class="text-red-500 text-center mt-4"></p>
+
+
+
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAjKBRRKgOmn1riONPsYEC0G9h-47EL9ug",
+    authDomain: "realworld.today",
+    projectId: "willistest-40dff",
+    storageBucket: "willistest-40dff.firebasestorage.app",
+    messagingSenderId: "524383134160",
+    appId: "1:524383134160:web:2fe912a3d5d2ad268c19d5",
+    measurementId: "G-27HNC6CGVW"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  console.log("🔥 Firebase 初始化成功！", app);
+
+  async function checkIfEmailExists(email) {
+    const apiKey = "AIzaSyAjKBRRKgOmn1riONPsYEC0G9h-47EL9ug";
+    try {
+      const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:createAuthUri?key=${apiKey}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          identifier: email,
+          continueUri: "https://realworld.today"
+        })
+      });
+      console.log("✅ Raw email check response status:", response.status);
+      const clone = response.clone();
+      console.log("✅ Raw email check response body:", await clone.text());
+      if (!response.ok) {
+        console.warn("Failed to check email existence", await response.text());
+        return undefined;
+      }
+      const data = await response.json();
+      if (data.hasOwnProperty('registered')) {
+        console.log("✅ Email registered status:", data.registered);
+        return data.registered === true;
+      } else {
+        console.log("✅ Email not registered, 'registered' field missing");
+        return false;
+      }
+    } catch (err) {
+      console.warn("Email existence check error", err);
+      return undefined;
+    }
+  }
+
+  async function loginOrRegister() {
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let confirmPassword = document.getElementById("confirmPassword");
+    let errorMessage = document.getElementById("errorMessage");
+
+    if (confirmPassword.style.display === "block") {
+      if (password !== confirmPassword.value) {
+        errorMessage.style.color = "red";
+        errorMessage.textContent = "❌ 两次密码不一致，请重新输入！";
+        return;
+      }
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          console.log("✅ 注册成功", userCredential.user);
+          errorMessage.style.color = "green";
+          errorMessage.textContent = "✅ 注册成功！";
+          window.location.href = "mappage1.html";
+        })
+        .catch((error) => {
+          console.error("❌ 注册失败", error.code, error.message);
+          errorMessage.style.color = "red";
+          errorMessage.textContent = "❌ 注册失败：" + error.message;
+        });
+    } else {
+      const exists = await checkIfEmailExists(email);
+      if (exists) {
+        // Login flow
+        signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            console.log("✅ 登录成功", userCredential.user);
+            errorMessage.style.color = "green";
+            errorMessage.textContent = "✅ 登录成功！";
+            window.location.href = "mappage1.html";
+          })
+          .catch((error) => {
+            console.error("❌ 登录失败", error.code, error.message);
+            if (error.code === 'auth/wrong-password') {
+              errorMessage.style.color = "red";
+              errorMessage.textContent = "❌ Wrong password, please check and try again!";
+            } else {
+              errorMessage.style.color = "red";
+              errorMessage.textContent = "❌ 登录失败：" + error.message;
+            }
+          });
+      } else {
+        // Prompt registration
+        errorMessage.style.color = "orange";
+        errorMessage.textContent = "User not found, please enter the confirmation password and click again to complete the registration";
+        confirmPassword.style.display = "block";
+        document.getElementById("submitButton").textContent = "REGISTER";
+      }
+    }
+  }
+  window.loginOrRegister = loginOrRegister;
+
+  const provider = new GoogleAuthProvider();
+
+  function loginWithGoogle() {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const user = result.user;
+        console.log("✅ Google 登录成功", user);
+
+        let errorMessage = document.getElementById("errorMessage");
+        if (errorMessage) {
+          errorMessage.style.color = "green";
+          errorMessage.textContent = "✅ Google 登录成功！";
+        }
+
+        window.location.href = "mappage1.html";
+      })
+      .catch((error) => {
+        console.error("❌ Google 登录失败", error);
+        let errorMessage = document.getElementById("errorMessage");
+        if (errorMessage) {
+          errorMessage.style.color = "red";
+          errorMessage.textContent = "❌ Google 登录失败：" + error.message;
+        }
+      });
+  }
+  window.loginWithGoogle = loginWithGoogle;
+</script>
 </body>
 </html>

@@ -108,16 +108,31 @@
 </div>
 
 <script>
-  const token = "eyJraWQiOiI2NDlZUVZaTjJCIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJNTEg1V0gyUjhLIiwiaWF0IjoxNzQxMzA4MjYwLCJleHAiOjE3NDE5MzU1OTl9.ns6WaU0boac1xN_AsXxuBj806mAoBmDFxUh7JiVdWtuEP8CULfnDZ_3x6xNSu3dpcOLFe1nNfr5sEUN_zmosbw"; // 替换为你的 Apple MapKit Token
+  const tokens = {
+    "realworld.today": "eyJraWQiOiI1OU1GTDNUNzg3IiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJNTEg1V0gyUjhLIiwiaWF0IjoxNzQyMjYzNjcxLCJvcmlnaW4iOiJyZWFsd29ybGQudG9kYXkifQ.QQqbTiBcwNsGVENEj_dSy1QC3cYzQMWBm_WN7Y7ojPyJaakJ1w5xEFv4VJeCerLqnNVcGiMDHb6qQ0zynMEYmw",
+    "*.realworld.today": "eyJraWQiOiIzU0dMNlRDWjlZIiwidHlwIjoiSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJNTEg1V0gyUjhLIiwiaWF0IjoxNzQyMjYzNjcxLCJvcmlnaW4iOiIqLnJlYWx3b3JsZC50b2RheSJ9.UaCe51wCPeuVRtnmqkQxxETp2G6QDNXfMk6S3oglSmvAZC4oFYhmzjJCFB-GWzo3J5p8spgz5mwpZznhPFK0Qw"
+  };
 
-  // 初始化 Apple Maps
-  mapkit.init({
-    authorizationCallback: function(done) {
-      console.log("MapKit 正在初始化...");
-      done(token);
-    }
-  });
+  // 自动匹配 token
+  const currentHost = window.location.hostname;
+  let finalToken = "";
 
+  if (currentHost === "realworld.today") {
+    finalToken = tokens["realworld.today"];
+  } else if (currentHost.endsWith(".realworld.today")) {
+    finalToken = tokens["*.realworld.today"];
+  } else {
+    console.error("未匹配到合法域名，MapKit 无法初始化");
+  }
+
+  if (finalToken) {
+    mapkit.init({
+      authorizationCallback: function(done) {
+        console.log("MapKit 正在初始化...");
+        done(finalToken);
+      }
+    });
+  }
 var map = new mapkit.Map("map", {
   showsPointsOfInterest: false,
   showsTraffic: false,

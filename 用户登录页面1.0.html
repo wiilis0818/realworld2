@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 我的网站</title>
+  <script src="https://cdn.tailwindcss.com">
+  </script>
+  <style>
+    @font-face {
+      font-family: 'RealWorld';
+      src: url('RealWorld.woff2') format('woff2'); /* 你需要提供这个字体 */
+    }
+    body {
+      font-family: 'RealWorld', sans-serif;
+      background-color: #1E1E1E; /* 深空灰 */
+    }
+    /* 左侧地球区域 */
+    #globe-container {
+      width: 40%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    /* 让视频适配整个容器 */
+    #globe-video {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      object-fit: cover; /* 让视频填充整个区域 */
+    }
+    /* 右侧登录 */
+    #login-container {
+      width: 60%;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body class="flex h-screen">
+
+<!-- 左侧科技地球（使用 Firebase 视频） -->
+<div id="globe-container">
+  <video id="globe-video" autoplay loop muted playsinline>
+    <source src="https://firebasestorage.googleapis.com/v0/b/willistest-40dff.firebasestorage.app/o/1992-153555258.mp4?alt=media&token=466bde93-8ab3-4afa-9a77-9b47fa180a50" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+</div>
+
+<!-- 右侧登录表单 -->
+<div id="login-container">
+  <div class="max-w-md w-full px-6">
+    <h1 class="text-3xl font-bold text-white text-center mb-6">Sign in or create an account</h1>
+    <p class="text-gray-400 text-sm text-center mb-6">
+      By continuing, including through our platform partners, you agree to our
+      <a href="#" class="underline">User Agreement</a> and acknowledge our
+      <a href="#" class="underline">Privacy Policy</a>.
+    </p>
+
+    <form onsubmit="event.preventDefault(); loginUser();">
+      <input type="email" id="email" placeholder="Email address"
+             class="w-full border border-gray-500 bg-gray-700 text-white px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-400">
+      <input type="password" id="password" placeholder="Enter password"
+             class="w-full border border-gray-500 bg-gray-700 text-white px-4 py-3 mb-4 focus:outline-none focus:ring-2 focus:ring-gray-400">
+      <button type="submit" class="w-full bg-gray-500 text-white py-3 font-medium hover:opacity-80">LOGIN WITH EMAIL</button>
+    </form>
+    <p id="errorMessage" class="text-red-500 text-center mt-4"></p>
+
+    <div class="text-center my-4 text-gray-500">or</div>
+
+    <button class="w-full flex items-center justify-center border border-gray-500 py-3 mb-2 hover:bg-gray-700 text-white">
+      <img src="https://www.google.com/favicon.ico" class="w-5 h-5 mr-2"> CONTINUE WITH GOOGLE
+    </button>
+
+    <button class="w-full flex items-center justify-center border border-gray-500 py-3 mb-2 hover:bg-gray-700 text-white">
+      <img src="https://www.facebook.com/favicon.ico" class="w-5 h-5 mr-2"> CONTINUE WITH FACEBOOK
+    </button>
+
+    <button class="w-full flex items-center justify-center border border-gray-500 py-3 hover:bg-gray-700 text-white">
+      <img src="https://www.apple.com/favicon.ico" class="w-5 h-5 mr-2"> CONTINUE WITH APPLE
+    </button>
+  </div>
+</div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjKBRRKgOmn1riONPsYEC0G9h-47EL9ug",
+      authDomain: "realworld.today",
+      projectId: "willistest-40dff",
+      storageBucket: "willistest-40dff.firebasestorage.app",
+      messagingSenderId: "524383134160",
+      appId: "1:524383134160:web:2fe912a3d5d2ad268c19d5",
+      measurementId: "G-27HNC6CGVW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    console.log("🔥 Firebase 初始化成功！", app);
+
+    function loginUser() {
+      let email = document.getElementById("email").value;
+      let password = document.getElementById("password").value;
+      let errorMessage = document.getElementById("errorMessage");
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          console.log("✅ 登录成功", user);
+          errorMessage.style.color = "green";
+          errorMessage.textContent = "✅ 登录成功！";
+          window.location.href = "mappage1.html";
+        })
+        .catch((error) => {
+          console.error("❌ 登录失败", error.code, error.message);
+          errorMessage.style.color = "red";
+          errorMessage.textContent = "❌ 登录失败：" + error.message;
+        });
+    }
+    window.loginUser = loginUser;
+
+    const provider = new GoogleAuthProvider();
+
+    function loginWithGoogle() {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          const user = result.user;
+          console.log("✅ Google 登录成功", user);
+
+          let errorMessage = document.getElementById("errorMessage");
+          if (errorMessage) {
+            errorMessage.style.color = "green";
+            errorMessage.textContent = "✅ Google 登录成功！";
+          }
+
+          window.location.href = "mappage1.html";
+        })
+        .catch((error) => {
+          console.error("❌ Google 登录失败", error);
+          let errorMessage = document.getElementById("errorMessage");
+          if (errorMessage) {
+            errorMessage.style.color = "red";
+            errorMessage.textContent = "❌ Google 登录失败：" + error.message;
+          }
+        });
+    }
+    window.loginWithGoogle = loginWithGoogle;
+  </script>
+</body>
+</html>
